@@ -3,15 +3,15 @@ const Page = require('./page')
 
 class CartPage extends Page {
     get cartItems() {
-        return $$('//div[contains(@class,"cart_item")]')
+        return $$('//div[@class="cart_item"]')
     }
 
     get removeButtons() {
-        return $$('//button[contains(text(),"Remove")]')
+        return $$('//div[@class="cart_item"]//button[contains(text(),"Remove")]')
     }
 
     async getItemNames() {
-        const items = await $$('//div[contains(@class,"inventory_item_name")]')
+        const items = await $$('//div[@class="cart_item"]//div[contains(@class,"inventory_item_name")]')
         const names = []
 
         for (const item of items) {

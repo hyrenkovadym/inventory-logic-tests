@@ -2,6 +2,9 @@ const { $ } = require('@wdio/globals')
 const Page = require('./page')
 
 class LoginPage extends Page {
+    open() {
+        return browser.url('https://www.saucedemo.com/')
+    }
 
     get username() {
         return $('#user-name')
@@ -15,11 +18,9 @@ class LoginPage extends Page {
         return $('#login-button')
     }
 
-    open() {
-        return super.open('/')
-    }
-
     async login(user, pass) {
+        await this.username.waitForDisplayed()
+
         await this.username.setValue(user)
         await this.password.setValue(pass)
         await this.loginBtn.click()

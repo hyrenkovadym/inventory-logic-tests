@@ -21,7 +21,6 @@ This project contains automated tests for the SauceDemo inventory page.
 - verify cart badge shows "1"
 - verify cart content is updated correctly
 
----
 
 ## Sorting validation logic
 
@@ -37,7 +36,6 @@ After that it compares:
 
 If both arrays are equal, sorting works correctly.
 
----
 
 ## Tech stack
 
@@ -46,7 +44,6 @@ If both arrays are equal, sorting works correctly.
 - Mocha
 - XPath
 
----
 
 ## Project structure
 

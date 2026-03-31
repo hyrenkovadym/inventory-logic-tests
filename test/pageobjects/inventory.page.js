@@ -14,10 +14,6 @@ class InventoryPage extends Page {
         return $('//span[contains(@class,"title")]')
     }
 
-    get inventoryItems() {
-        return $$('//div[contains(@class,"inventory_list")]//div[contains(@class,"inventory_item")]')
-    }
-
     get cartLink() {
         return $('//a[contains(@class,"shopping_cart_link")]')
     }
@@ -31,11 +27,10 @@ class InventoryPage extends Page {
     }
 
     async getAllPrices() {
-        const items = await this.inventoryItems
+        const priceElements = await $$('//div[contains(@class,"inventory_item_price")]')
         const prices = []
 
-        for (const item of items) {
-            const priceEl = await item.$('.//div[contains(@class,"inventory_item_price")]')
+        for (const priceEl of priceElements) {
             const text = await priceEl.getText()
             prices.push(parseFloat(text.replace('$', '')))
         }
@@ -45,24 +40,24 @@ class InventoryPage extends Page {
 
     async addProductToCartByName(productName) {
         const button = await $(
-            `//div[contains(@class,"inventory_item")][.//div[contains(@class,"inventory_item_name") and normalize-space(text())="${productName}"]]//button[contains(text(),"Add to cart")]`
+            `//div[@class="inventory_item"][.//div[contains(@class,"inventory_item_name") and normalize-space(text())="${productName}"]]//button[contains(text(),"Add to cart")]`
         )
         await button.click()
     }
 
     async removeProductByName(productName) {
         const button = await $(
-            `//div[contains(@class,"inventory_item")][.//div[contains(@class,"inventory_item_name") and normalize-space(text())="${productName}"]]//button[contains(text(),"Remove")]`
+            `//div[@class="inventory_item"][.//div[contains(@class,"inventory_item_name") and normalize-space(text())="${productName}"]]//button[contains(text(),"Remove")]`
         )
         await button.click()
     }
 
     async getCartBadgeText() {
-        const isExisting = await this.cartBadge.isExisting()
-        if (!isExisting) {
+        const exists = await this.cartBadge.isExisting()
+        if (!exists) {
             return '0'
         }
-        return this.cartBadge.getText()
+        return await this.cartBadge.getText()
     }
 
     async openCart() {
