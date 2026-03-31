@@ -1,48 +1,57 @@
+const LoginPage = require('../pageobjects/login.page')
+const InventoryPage = require('../pageobjects/inventory.page')
+const CartPage = require('../pageobjects/cart.page')
+const { isSorted } = require('../utils/sort.utils')
+
 describe('Inventory Logic Flow', () => {
+    beforeEach(async () => {
+        await LoginPage.open()
+        await LoginPage.login('standard_user', 'secret_sauce')
+        await InventoryPage.isLoaded()
 
-  const login = async () => {
-    await browser.url('https://www.saucedemo.com/');
+        const badgeText = await InventoryPage.getCartBadgeText()
 
-    await $('#user-name').setValue('standard_user');
-    await $('#password').setValue('secret_sauce');
-    await $('#login-button').click();
-  };
+        if (badgeText !== '0') {
+            await InventoryPage.openCart()
+            await CartPage.clearCart()
+            await browser.back()
+            await InventoryPage.isLoaded()
+        }
+    })
 
-  it('UC-1: Sorting validation (low → high)', async () => {
-    await login();
+    it('should validate sorting from low to high', async () => {
+        await InventoryPage.sortByVisibleText('Price (low to high)')
 
-    const sortDropdown = await $('//select[@class="product_sort_container"]');
-    await sortDropdown.selectByVisibleText('Price (low to high)');
+        const prices = await InventoryPage.getAllPrices()
 
-    const priceElements = await $$('//div[@class="inventory_item_price"]');
+        await expect(isSorted(prices, 'asc')).toEqual(true)
+    })
 
-    const prices = [];
-    for (let el of priceElements) {
-      const text = await el.getText();
-      prices.push(parseFloat(text.replace('$', '')));
-    }
+    it('should validate cart badge and cart content after add/remove actions', async () => {
+        await expect(await InventoryPage.getCartBadgeText()).toEqual('0')
 
-    const sorted = [...prices].sort((a, b) => a - b);
+        await InventoryPage.addProductToCartByName('Sauce Labs Backpack')
+        await InventoryPage.addProductToCartByName('Sauce Labs Bike Light')
 
-    await expect(prices).toEqual(sorted);
-  });
+        await expect(await InventoryPage.getCartBadgeText()).toEqual('2')
 
+        await InventoryPage.openCart()
 
-  it('UC-2: Cart state logic', async () => {
-    await login();
+        await expect(await CartPage.getItemsCount()).toEqual(2)
+        await expect(await CartPage.isProductPresent('Sauce Labs Backpack')).toEqual(true)
+        await expect(await CartPage.isProductPresent('Sauce Labs Bike Light')).toEqual(true)
 
-    const addButtons = await $$('//button[contains(text(),"Add to cart")]');
+        await browser.back()
+        await InventoryPage.isLoaded()
 
-    await addButtons[0].click();
-    await addButtons[1].click();
+        await InventoryPage.removeProductByName('Sauce Labs Backpack')
 
-    const badge = await $('//span[@class="shopping_cart_badge"]');
-    await expect(badge).toHaveText('2');
+        await expect(await InventoryPage.getCartBadgeText()).toEqual('1')
 
-    const removeButtons = await $$('//button[contains(text(),"Remove")]');
-    await removeButtons[0].click();
+        await InventoryPage.openCart()
 
-    await expect(badge).toHaveText('1');
-  });
-
-});
+        await expect(await CartPage.getItemsCount()).toEqual(1)
+        await expect(await CartPage.isProductPresent('Sauce Labs Backpack')).toEqual(false)
+        await expect(await CartPage.isProductPresent('Sauce Labs Bike Light')).toEqual(true)
+    })
+})

@@ -1,25 +1,29 @@
-class LoginPage {
-  open() {
-    return browser.url('https://www.saucedemo.com/');
-  }
+const { $ } = require('@wdio/globals')
+const Page = require('./page')
 
-  get username() {
-    return $('#user-name');
-  }
+class LoginPage extends Page {
 
-  get password() {
-    return $('#password');
-  }
+    get username() {
+        return $('#user-name')
+    }
 
-  get loginBtn() {
-    return $('#login-button');
-  }
+    get password() {
+        return $('#password')
+    }
 
-  async login(user, pass) {
-    await this.username.setValue(user);
-    await this.password.setValue(pass);
-    await this.loginBtn.click();
-  }
+    get loginBtn() {
+        return $('#login-button')
+    }
+
+    open() {
+        return super.open('/')
+    }
+
+    async login(user, pass) {
+        await this.username.setValue(user)
+        await this.password.setValue(pass)
+        await this.loginBtn.click()
+    }
 }
 
-export default new LoginPage();
+module.exports = new LoginPage()
